@@ -3,29 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { Context } from "../components/context/context";
-import Header from "@/components/layout/Header";
+import FooterNav from "@/components/layout/FooterNav";
+import AuthProtector from "@/components/layout/AuthProtector";
 
 export default function ProtectedPage() {
-  const router = useRouter();
-  const ctx = useContext(Context);
-
-  if (!ctx) throw new Error("Context is null in ProtectedPage");
-
-  const { user } = ctx;
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!user && !token) {
-      router.push("/login");
-    }
-  }, [user]);
-  if (!user) return null;
-  console.log(user.avatar);
-
   return (
-    <div>
-      <Header />
-    </div>
+    <AuthProtector>
+      <FooterNav />
+    </AuthProtector>
   );
 }

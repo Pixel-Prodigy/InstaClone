@@ -11,13 +11,13 @@ declare global {
   type Context = {
     user: User | null;
     setUser?: Dispatch<SetStateAction<User | null>>;
-    login: (user: User) => void;
+    login: (user: User | null) => void;
     logout: () => void;
   };
   type AuthApiResponse = {
     success: boolean;
     message?: string;
     data?: User;
-    token?: string; 
+    token?: string;
   };
 }
