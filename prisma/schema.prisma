@@ -16,7 +16,7 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  name      String?
+  username      String?  @unique
   avatar    String? 
   password  String
   token     String?  @unique
@@ -26,7 +26,6 @@ model User {
 
   following Follow[] @relation("UserFollowing")
   followers Follow[] @relation("UserFollowers")
-
   posts     Post[]
   likes     Like[]
   comments  Comment[]
@@ -38,6 +37,8 @@ model Post {
   content   String
   imageUrl  String? 
   createdAt DateTime @default(now())
+hideComments Boolean @default(false)
+hideLikes Boolean @default(false)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
