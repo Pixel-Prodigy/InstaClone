@@ -8,7 +8,7 @@ import Input from "@/components/ui/input";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 export default function page() {
   const [signup, setSignup] = useState<User>({
-    name: "",
+    username: "",
     password: "",
     email: "",
     avatar: "",
@@ -19,7 +19,7 @@ export default function page() {
   const router = useRouter();
   const ctx = useContext(Context);
   if (!ctx) throw new Error("Context is null in /signup");
-  const { login, user } = ctx;
+  const { login } = ctx;
   const signupRequest = useCallback(async () => {
     setLoading(true);
     try {
@@ -34,12 +34,11 @@ export default function page() {
       setResponse(data);
 
       if (res.ok && data.success) {
-        localStorage.setItem("user", JSON.stringify(data));
-        login(data.data);
+        login(data.data, data.data.token);
 
         router.push("/login");
         setSignup({
-          name: "",
+          username: "",
           password: "",
           email: "",
           avatar: "",
@@ -59,10 +58,7 @@ export default function page() {
     <div className="grid place-items-center max-w-[500px] px-10 min-h-screen mx-auto">
       <div className="flex flex-col items-center w-full gap-8 -mt-10 ">
         <div className="overflow-hidden max-h-[55px]">
-          <img
-            src="https://static.cdninstagram.com/rsrc.php/v4/yB/r/E7m8ZCMOFDS.png"
-            className="w-[192px]"
-          />
+          <img src="/insta.png" className="w-[192px]" />
         </div>
         <div className="flex flex-col items-end w-full gap-4">
           <div className="flex items-center justify-center w-full">
@@ -102,9 +98,9 @@ export default function page() {
           </div>
           <Input
             onChange={(e) =>
-              setSignup((prev) => ({ ...prev, name: e.target.value }))
+              setSignup((prev) => ({ ...prev, username: e.target.value }))
             }
-            value={signup?.name}
+            value={signup?.username}
             type="text"
             placeholder="Username"
           />
@@ -144,7 +140,7 @@ export default function page() {
 
         <button
           disabled={
-            !signup.email || !signup.password || !signup.name || loading
+            !signup.email || !signup.password || !signup.username || loading
           }
           onClick={signupRequest}
           className="bg-sky-500 w-full font-bold py-3 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-sky-700 transition-all duration-400 cursor-pointer"
