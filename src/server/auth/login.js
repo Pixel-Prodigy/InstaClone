@@ -1,14 +1,12 @@
-import { prisma } from "../../lib/prisma.js";
+import { prisma } from "../clients/prisma.js";
 import argon2 from "argon2";
-import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       return res
@@ -22,21 +20,30 @@ export const login = async (req, res) => {
         .status(401)
         .json({ success: false, message: "Invalid email or password" });
     }
+    console.log(process.env.NEXT_PUBLIC_JWT_SECRET)
 
-    const token = crypto.randomUUID();
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.NEXT_PUBLIC_JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    await prisma.user.update({
-      where: { email },
-      data: { token },
-    });
+    res.setHeader(
+      "Set-Cookie",
+      `authToken=${token}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict; Secure`
+    );
 
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
-      data: { email: user.email, name: user.name, avatar: user.avatar, token },
+      data: {
+        email: user.email,
+        username: user.username,
+        avatar: user.avatar,
+      },
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Failed to Login" });
     console.log(err);
+    res.status(500).json({ success: false, message: "Failed to Login" });
   }
 };
