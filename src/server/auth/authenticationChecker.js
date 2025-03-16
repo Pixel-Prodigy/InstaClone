@@ -1,13 +1,20 @@
-import { prisma } from "../../lib/prisma.js";
+import { prisma } from "../clients/prisma.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 export const authenticateUser = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-
+    const token = req.cookies.authToken;
+    console.log(req.cookies);
     if (!token) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const user = await prisma.user.findFirst({ where: { token } });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decoded);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
 
     if (!user) {
       return res.status(401).json({ success: false, message: "Invalid token" });
@@ -17,12 +24,14 @@ export const authenticateUser = async (req, res) => {
       success: true,
       data: {
         email: user.email,
-        name: user.name,
+        username: user.username,
         avatar: user.avatar,
       },
     });
   } catch (err) {
-    console.error("Error in /me:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Authentication Error:", err);
+    res
+      .status(401)
+      .json({ success: false, message: "Invalid or expired token" });
   }
 };
