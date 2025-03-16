@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useState, useContext } from "react";
+import { useCallback, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Context } from "@/components/context/context";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -22,11 +22,11 @@ export default function page() {
   const [response, setResponse] = useState<AuthApiResponse | null>(null);
   const ctx = useContext(Context);
   if (!ctx) throw new Error("Context is null in /login");
-  const { login: loginContext, user } = ctx;
+  const { login: loginContext } = ctx;
   const LoginRequest = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,30 +35,30 @@ export default function page() {
       });
       const data = await res.json();
       setResponse(data);
+
       if (res.ok && data.success) {
-        loginContext(data.data);
-        if (data.success) {
-          router.push("/");
-          localStorage.setItem("token", data.data.token);
-          setLogin({
-            email: "",
-            password: "",
-          });
-        }
+        loginContext(data.data, data.data.token);
+        router.push("/");
+
+        setLogin({
+          email: "",
+          password: "",
+        });
       }
     } catch (err) {
-      if (err)
-        throw new Error("Catched An Error while fetching req in /login:", err);
+      console.error("Error in /login:", err);
     } finally {
       setLoading(false);
     }
   }, [login]);
+
   return (
     <div className="grid place-items-center max-w-[500px] px-10 min-h-screen mx-auto">
       <div className="flex flex-col items-center w-full gap-8 -mt-40 ">
         <div className="overflow-hidden max-h-[55px] mb-4">
           <img
-            src="https://static.cdninstagram.com/rsrc.php/v4/yB/r/E7m8ZCMOFDS.png"
+            src="/insta.png
+            "
             className="w-[192px]"
           />
         </div>
