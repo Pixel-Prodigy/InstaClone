@@ -1,22 +1,28 @@
-import { supabase } from "../../lib/supabaseClient.js";
-import { prisma } from "../../lib/prisma.js";
+import { supabase } from "../supabaseClient.js";
+import { prisma } from "../clients/prisma.js";
 import argon2 from "argon2";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
 export const signup = async (req, res) => {
-  const { name, email, password, avatar } = req.body;
+  const { username, email, password, avatar } = req.body;
 
   try {
-    const userCheck = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    const userCheck = await prisma.user.findUnique({ where: { email } });
     if (userCheck) {
       return res
         .status(400)
-        .json({ success: false, message: "Email already in use" });
+        .json({ success: false, message: "This email is already in use." });
+    }
+
+    const userNameCheck = await prisma.user.findUnique({ where: { username } });
+    if (userNameCheck) {
+      return res.status(400).json({
+        success: false,
+        message: "This username isn't available. Please try another.",
+      });
     }
 
     const hashedPassword = await argon2.hash(password);
@@ -26,15 +32,11 @@ export const signup = async (req, res) => {
       try {
         const base64Data = avatar.replace(/^data:image\/\w+;base64,/, "");
         const fileBuffer = Buffer.from(base64Data, "base64");
-
-        const fileName = `${Date.now()}.png`;
+        const fileName = `avatar-${username}-${Date.now()}.png`;
 
         const { data, error } = await supabase.storage
           .from("avatars")
-          .upload(fileName, fileBuffer, {
-            contentType: "image/png",
-          });
-
+          .upload(fileName, fileBuffer, { contentType: "image/png" });
         if (error) {
           console.error("Supabase Upload Error:", error);
           return res
@@ -44,7 +46,6 @@ export const signup = async (req, res) => {
 
         avatarUrl = supabase.storage.from("avatars").getPublicUrl(fileName)
           .data.publicUrl;
-
       } catch (uploadError) {
         console.error("Image Upload Error:", uploadError);
         return res
@@ -53,19 +54,31 @@ export const signup = async (req, res) => {
       }
     }
 
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        avatar: avatarUrl,
-      },
+    const newUser = await prisma.user.create({
+      data: { username, email, password: hashedPassword, avatar: avatarUrl },
+    });
+
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email },
+      "00UAS0Zs/5pKV3kGFNBpwp6Ddihe7/IIWWhorsyyPt8",
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      data: { email, name, avatar: avatarUrl },
+      data: {
+        email: newUser.email,
+        username: newUser.username,
+        avatar: newUser.avatar,
+      },
     });
   } catch (err) {
     console.error("Signup Error:", err);
