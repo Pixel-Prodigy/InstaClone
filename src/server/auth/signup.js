@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient.js";
+import { supabase } from "../clients/supabaseClient.js";
 import { prisma } from "../clients/prisma.js";
 import argon2 from "argon2";
 import dotenv from "dotenv";
@@ -58,27 +58,9 @@ export const signup = async (req, res) => {
       data: { username, email, password: hashedPassword, avatar: avatarUrl },
     });
 
-    const token = jwt.sign(
-      { id: newUser.id, email: newUser.email },
-      "00UAS0Zs/5pKV3kGFNBpwp6Ddihe7/IIWWhorsyyPt8",
-      { expiresIn: "7d" }
-    );
-
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      data: {
-        email: newUser.email,
-        username: newUser.username,
-        avatar: newUser.avatar,
-      },
     });
   } catch (err) {
     console.error("Signup Error:", err);
