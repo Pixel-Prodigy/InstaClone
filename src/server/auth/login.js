@@ -6,7 +6,16 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        followers: true,
+        following: true,
+        posts: true,
+        likes: true,
+        comments: true,
+      },
+    });
 
     if (!user) {
       return res
@@ -20,30 +29,39 @@ export const login = async (req, res) => {
         .status(401)
         .json({ success: false, message: "Invalid email or password" });
     }
-    console.log(process.env.NEXT_PUBLIC_JWT_SECRET)
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.NEXT_PUBLIC_JWT_SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    res.setHeader(
-      "Set-Cookie",
-      `authToken=${token}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict; Secure`
-    );
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 3600000,
+    });
 
     res.status(200).json({
       success: true,
       message: "User logged in successfully",
       data: {
+        id: user.id,
         email: user.email,
         username: user.username,
-        avatar: user.avatar,
+        avatar: user.avatar || "/user.jpg",
+        followers: user.followers,
+        following: user.following,
+        posts: user.posts,
+        likes: user.likes,
+        comments: user.comments,
+        socialLinks: user.socialLinks || [],
+        isPrivate: user.isPrivate,
+        bio: user.bio,
       },
     });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ success: false, message: "Failed to Login" });
   }
 };
