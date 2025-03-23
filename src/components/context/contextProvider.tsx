@@ -7,61 +7,54 @@ export default function ContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserDataResponse | null>(null);
+  const [token, setToken] = useState<string | null>(
+    typeof window !== "undefined" ? localStorage.getItem("token") : null
+  );
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-
-    if (!storedToken) {
-      logout();
-      return;
-    }
-
-    const fetchUser = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/me`, {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          console.error("Failed to fetch user data");
-          logout();
-          return;
-        }
-
-        const userData = await response.json();
-        setUser(userData);
-        setToken(storedToken);
-      } catch (error) {
-        console.error("Error sending token:", error);
-        logout();
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  const login = (user: User | null, token: string) => {
+  const login = (user: UserDataResponse | null) => {
     setUser(user);
-    setToken(token);
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("token", token);
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("user");
-    localStorage.removeItem("token");
+  };
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/me`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        console.error("Failed to fetch user data");
+        logout();
+        return;
+      }
+
+      const userData = await response.json();
+      if (userData.success) {
+        login(userData);
+      } else {
+        logout();
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      logout();
+    }
   };
 
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
   return (
-    <Context.Provider value={{ login, logout, user, token }}>
+    <Context.Provider value={{ login, logout, user, token, fetchUserData }}>
       {children}
     </Context.Provider>
   );
