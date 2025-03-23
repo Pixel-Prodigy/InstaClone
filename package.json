@@ -11,7 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@prisma/client": "^6.4.1",
+    "@prisma/client": "^6.5.0",
     "@supabase/supabase-js": "^2.49.1",
     "argon2": "^0.41.1",
     "cookie-parser": "^1.4.7",
@@ -36,6 +36,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "prisma": "^6.4.1",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "5.8.2"
   }
 }
