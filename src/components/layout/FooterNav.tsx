@@ -4,19 +4,17 @@ import { useContext } from "react";
 import { Context } from "../context/context";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function FooterNav() {
   const ctx = useContext(Context);
   if (!ctx) return null;
   const { user } = ctx;
   const pathName = usePathname();
-
   const isActive = (path: string) => pathName === path;
 
   return (
-    <div className="flex items-center fixed bottom-0 left-0 right-0 w-full bg-[#101010] border-t-[1px] border-t-gray-500/20">
-      <div className="max-w-[1280px] gap-6 flex pb-[15px] pt-3 items-center mx-auto">
+    <div className="flex items-center fixed bottom-0 left-0 right-0 w-full bg-[#0a0a0a] border-t-[1px] border-t-gray-500/20">
+      <div className="max-w-[1280px] gap-6 flex pb-[15px] pt-3 items-center justify-between mx-auto">
         <Link href="/" className="cursor-pointer">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -24,7 +22,7 @@ export default function FooterNav() {
             viewBox="0 0 24 24"
             strokeWidth="1.5"
             stroke="currentColor"
-            className={`w-[28px] h-[28px] ${isActive("/") ? "fill-white" : "fill-none"}`}
+            className={`w-[35px] h-[35px] ${isActive("/") ? "fill-white" : "fill-none"}`}
           >
             <path
               strokeLinecap="round"
@@ -39,10 +37,9 @@ export default function FooterNav() {
             xmlns="http://www.w3.org/2000/svg"
             fill={isActive("/search") ? "white" : "none"}
             viewBox="0 0 24 24"
-            strokeWidth="1.5"
             stroke="currentColor"
-            className={`w-[28px] h-[28px] ${
-              isActive("/search") ? "fill-white" : "fill-none"
+            className={`w-[35px] fill-none h-[35px] ${
+              isActive("/search") ? "stroke-3" : "stroke-1"
             }`}
           >
             <path
@@ -63,7 +60,7 @@ export default function FooterNav() {
             xmlns="http://www.w3.org/2000/svg"
             fill={isActive("/create") ? "white" : "none"}
             viewBox="0 0 24 24"
-            strokeWidth="1.5"
+            strokeWidth="2.5"
             stroke="currentColor"
             className="w-6 h-6"
           >
@@ -82,7 +79,7 @@ export default function FooterNav() {
             viewBox="0 0 24 24"
             strokeWidth="1.5"
             stroke="currentColor"
-            className={`w-[28px] h-[28px] ${
+            className={`w-[35px] h-[35px] ${
               isActive("/inbox") ? "fill-white" : "fill-none"
             }`}
           >
@@ -101,7 +98,7 @@ export default function FooterNav() {
           }`}
         >
           <img
-            src={user?.avatar || "/user.jpg"}
+            src={user?.data?.avatar || "/user.jpg"}
             alt="User avatar"
             className="w-full h-full rounded-full object-cover border-2 border-transparent "
           />
