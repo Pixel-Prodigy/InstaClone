@@ -1,6 +1,7 @@
 import { prisma } from "../clients/prisma.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { GiConsoleController } from "react-icons/gi";
 dotenv.config();
 
 export const authenticateUser = async (req, res) => {
@@ -20,6 +21,7 @@ export const authenticateUser = async (req, res) => {
         posts: true,
         likes: true,
         comments: true,
+        socialLinks: true,
       },
     });
 
