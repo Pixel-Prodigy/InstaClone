@@ -1,5 +1,6 @@
 import { supabase } from "../clients/supabaseClient.js";
 import { prisma } from "../clients/prisma.js";
+import { randomUUID } from "crypto";
 export const editProfile = async (req, res) => {
   const { userId, email, username, bio, isPrivate, socialLinks, avatar } =
     req.body;
@@ -63,7 +64,18 @@ export const editProfile = async (req, res) => {
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { email, username, bio, isPrivate, socialLinks, avatar },
+      data: {
+        email,
+        username,
+        bio,
+        isPrivate,
+        socialLinks: {
+          deleteMany: {},
+          create: socialLinks,
+        },
+
+        avatar,
+      },
     });
 
     return res.status(200).json({
