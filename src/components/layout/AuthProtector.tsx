@@ -10,6 +10,9 @@ const AuthProtector = ({ children }: { children: React.ReactNode }) => {
 
   if (!ctx) return null;
   const { user } = ctx;
+  console.log(user)
+
+  
 
   useEffect(() => {
     if (!user) {
