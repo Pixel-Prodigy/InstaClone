@@ -6,18 +6,19 @@ export async function allPosts(req, res) {
       include: {
         user: true,
         comments: true,
-        likes: true
+        likes: true,
       },
     });
 
     const filteredPosts = posts
-      .filter((post) => !post.user.isPrivate) 
+      .filter((post) => !post.user.isPrivate)
       .map((post) => ({
         ...post,
         imageUrl: post.imageUrl,
         user: post.user,
         content: post.content,
         hideComments: post.hideComments,
+        createdAt: post.createdAt,
         hideLikes: post.hideLikes,
       }));
 
