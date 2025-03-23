@@ -13,7 +13,6 @@ export async function newPost(req, res) {
         .json({ success: false, message: "No image provided" });
     }
     const user = jwt.verify(token, process.env.JWT_SECRET);
-console.log(user)
     const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
     const fileBuffer = Buffer.from(base64Data, "base64");
     const fileName = `post-${Date.now()}-${randomUUID()}.png`;
